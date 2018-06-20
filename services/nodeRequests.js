@@ -116,7 +116,14 @@ const sendTransactionFromLib = (tx, rpcAddress) => {
   });
 };
 
-
+const getAssetInfo = (assetId, rpcAddress, apiKey) => {
+  return request({
+    method: 'GET',
+    uri: new URL('/assets/details/' + assetId, rpcAddress),
+    json: true,
+    headers: {'X-API-KEY': apiKey}
+  });
+}
 
 
 module.exports = {  
@@ -124,6 +131,7 @@ module.exports = {
   getBalanceByAddressAndAsset,
 
   sendTransactionFromLib,
+  getAssetInfo,
 
   setRpcConfig,
   getLastBlockNumber,

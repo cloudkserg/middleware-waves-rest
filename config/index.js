@@ -16,11 +16,16 @@ const path = require('path'),
     port: parseInt(process.env.REST_PORT) || 8081,
     auth: process.env.USE_AUTH || false
   }, 
+  rabbit = {
+    url: process.env.RABBIT_URI || 'amqp://localhost:5672',
+    serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
+  },
   node = {
     rpc: process.env.RPC || 'http://localhost:6869'
   };
 
 let config = {
+  rabbit,
   mongo: {
     accounts: {
       uri: process.env.MONGO_ACCOUNTS_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/data',
@@ -48,28 +53,22 @@ let config = {
       connections: {
         primary: mongoose
       },
+      libs: {
+          requests,
+      },
 
       settings: {
         node,
-        requests,
-        ['request-promise']: require('request-promise'),
         apiKey: process.env.API_KEY || 'password',
         mongo: {
           accountPrefix: process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
           collectionPrefix: process.env.MONGO_DATA_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves'
         },
-        rabbit: {
-          url: process.env.RABBIT_URI || 'amqp://localhost:5672',
-          serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
-        }
+        rabbit
       }
     }
   }
 };
 
 
-module.exports = (() => {
-  //for easy tests
-  config.rabbit = config.nodered.functionGlobalContext.settings.rabbit;
-  return config;
-})();
+module.exports = config;
