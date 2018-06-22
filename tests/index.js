@@ -122,7 +122,7 @@ describe('core/rest', function () { //todo add integration tests for query, push
       request({
         url: `http://localhost:${config.rest.port}/tx/send`,
         method: 'POST',
-        json: {tx}
+        json: tx
       }, async (err, resp) => {
         if (err || resp.statusCode !== 200)
           return rej(err || resp);
