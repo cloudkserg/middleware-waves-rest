@@ -21,7 +21,11 @@ config['dev'] = {
   publicKeys: [
     process.env.PUBLIC_KEY_ONE || 'GbGEY3XVc2ohdv6hQBukVKSTQyqP8rjQ8Kigkj6bL57S',
     process.env.PUBLIC_KEY_TWO || '3tWuqg9syHTsdmNNmwUbguLUhnpyE5AS4rpkojgm6aw2',
-  ]
+  ],
+  proxyPort: 3001,
+  signature: 'token123',
+  ['ethereum-public-key']: 'dsfdsfsfsdfsdfsdfsdf',
+  ['waves-addresss']: '3JfE6tjeT7PnpuDQKxiVNLn4TJUFhuMaaT5'
 };
 
 module.exports = config;

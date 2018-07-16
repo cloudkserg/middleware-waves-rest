@@ -35,6 +35,16 @@ const accountModel = require('../models/accountModel'),
 
 //let accounts, amqpInstance, exampleTransactionHash;
 
+
+function authRequest(options, res) {
+    request(_.merge(options, {
+        headers: {
+            'Authorization': 'Bearer token 123'
+        }
+    }), res);
+}
+
+
 describe('core/rest', function () {
 
   before(async () => {
@@ -56,26 +66,18 @@ describe('core/rest', function () {
     await clearQueues(ctx.amqp.instance);
   });
 
-  it('address/create from post request and check send event user.created in internal', async () => {
-    const newAddress = `${_.chain(new Array(35)).map(() => _.random(0, 9)).join('').value()}`;
-    ctx.accounts.push(newAddress);
 
+
+
+
+  it('address/create from rabbitmq and check send event user.created in internal', async () => {
+
+    const newAddress = ctx.accounts[0];
     await new Promise.all([
       (async () => {
-        await new Promise((res, rej) => {
-          request({
-            url: `http://localhost:${config.rest.port}/addr/`,
-            method: 'POST',
-            json: {address: newAddress}
-          }, async (err, resp) => {
-            if (err || resp.statusCode !== 200)
-              return rej(err || resp);
-            const account = await getAccountFromMongo(newAddress);
-            expect(account).not.to.be.null;
-            expect(account.isActive).to.be.true;
-            res();
-          });
-        });
+        const channel = await amqpInstance.createChannel();
+        const info = {'waves-address': newAddress, user: 1};
+        await channel.publish('profile', `address.created`, new Buffer(JSON.stringify(info)));
       })(),
       (async () => {
         const channel = await ctx.amqp.instance.createChannel();
@@ -86,11 +88,26 @@ describe('core/rest', function () {
           const content = JSON.parse(message.content);
           expect(content.address).to.be.equal(newAddress);
         }, {noAck: true});
+    
+        const acc = await accountModel.findOne({address: ctx.accounts[0]});
+        expect(acc.address).to.be.equal(newAddress);
       })()
     ]);
 
   });
 
+  it('address/delete from rabbitmq and check send event user.created in internal', async () => {
+
+    const newAddress = ctx.accounts[0];
+    const channel = await amqpInstance.createChannel();
+    const info = {'waves-address': newAddress, user: 1};
+    await channel.publish('profile', `address.deleted`, new Buffer(JSON.stringify(info)));
+
+    await Promise.delay(4000);
+
+    const acc = await accountModel.findOne({address: ctx.accounts[0]});
+    expect(acc).to.be.equal(null);
+  });
   it('tx/send send signedTransaction', async () => {
     const Waves = WavesAPI.create({
       networkByte: 'CUSTOM',
@@ -119,7 +136,7 @@ describe('core/rest', function () {
     const tx = await transferTransaction.prepareForAPI(seed.keyPair.privateKey);
 
     await new Promise((res, rej) => {
-      request({
+      authRequest({
         url: `http://localhost:${config.rest.port}/tx/send`,
         method: 'POST',
         json: tx
@@ -131,26 +148,6 @@ describe('core/rest', function () {
         expect(body.senderPublicKey).to.eq(seed.keyPair.publicKey);
         expect(body.fee).to.eq(100000);
         expect(body.id).to.not.empty;
-        res();
-      });
-    });
-  });
-
-  it('address/remove by rest', async () => {
-    const removeAddress = _.pullAt(ctx.accounts, ctx.accounts.length - 1)[0];
-
-    await new Promise((res, rej) => {
-      request({
-        url: `http://localhost:${config.rest.port}/addr/`,
-        method: 'DELETE',
-        json: {address: removeAddress}
-      }, async (err, resp) => {
-        if (err || resp.statusCode !== 200)
-          return rej(err || resp);
-
-        const account = await getAccountFromMongo(removeAddress);
-        expect(account).not.to.be.null;
-        expect(account.isActive).to.be.false;
         res();
       });
     });
@@ -228,28 +225,9 @@ describe('core/rest', function () {
   });
 
 
-  it('GET tx/:addr/history for non exist', async () => {
-    const address = 'LAAAAAAAAAAAAAAAALLL';
-
-
-    await new Promise((res, rej) => {
-      request({
-        url: `http://localhost:${config.rest.port}/tx/${address}/history`,
-        method: 'GET',
-      }, async (err, resp) => {
-        if (err || resp.statusCode !== 200)
-          return rej(err || resp);
-
-        const body = JSON.parse(resp.body);
-        expect(body).to.be.empty;
-        res();
-      });
-    });
-  });
-
   it('GET tx/:hash for transaction [0 => 1]', async () => {
     await new Promise((res, rej) => {
-      request({
+      authRequest({
         url: `http://localhost:${config.rest.port}/tx/${ctx.tx._id}`,
         method: 'GET',
       }, (err, resp) => {
