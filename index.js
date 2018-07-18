@@ -28,12 +28,17 @@ _.chain([mongoose.accounts, mongoose.data])
     })
   ).value();
 
+config.nodered.functionGlobalContext.connections.primary = mongoose;
+
+
+
 const init = async () => {
 
   require('require-all')({
     dirname: path.join(__dirname, '/models'),
     filter: /(.+Model)\.js$/
   });
+
 
   if (config.nodered.autoSyncMigrations)
     await migrator.run(config.nodered.mongo.uri, path.join(__dirname, 'migrations'));

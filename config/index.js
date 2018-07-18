@@ -18,7 +18,8 @@ const path = require('path'),
   }, 
   node = {
     rpc: process.env.RPC || 'http://localhost:6869'
-  };
+  },
+  accountPrefix = process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves';
 
 let config = {
   mongo: {
@@ -54,12 +55,17 @@ let config = {
         ['request-promise']: require('request-promise'),
         apiKey: process.env.API_KEY || 'password',
         mongo: {
-          accountPrefix: process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
+          accountPrefix: accountPrefix,
           collectionPrefix: process.env.MONGO_DATA_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves'
         },
         rabbit: {
           url: process.env.RABBIT_URI || 'amqp://localhost:5672',
           serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
+        },
+        laborx: {
+          authProvider: 'http://localhost:3001',
+          profileModel: accountPrefix + 'Profile',
+          dbAlias: 'accounts'
         }
       }
     }
