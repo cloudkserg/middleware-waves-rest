@@ -63,7 +63,7 @@ let config = {
           serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
         },
         laborx: {
-          authProvider: 'http://localhost:3001',
+          authProvider: process.env.LABORX || 'http://localhost:3001',
           profileModel: accountPrefix + 'Profile',
           dbAlias: 'accounts'
         }
