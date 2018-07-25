@@ -70,7 +70,7 @@ The options are presented below:
 | API_KEY | api key for node waves [private requests]
 | HTTP_ADMIN | admin path for nodered or false (if not publish as default)
 | RPC   | the path to waves rest api for get balance for user 
-| LABORX | url for laborxAuth [default=localhost:3001]
+| LABORX | url for laborxAuth [default=http://localhost:3001/api/v1/security]
 
 #### Configure env for tests
 

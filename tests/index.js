@@ -61,7 +61,7 @@ describe('core/rest', function () {
     const newAddress = ctx.accounts[1];
     const channel = await ctx.amqp.instance.createChannel();
     const info = {'nem-address': newAddress, user: 1};
-    await channel.publish('profile', 'address.created', new Buffer(JSON.stringify(info)));
+    await channel.publish('profiles', 'address.created.waves-address', new Buffer(JSON.stringify(info)));
 
     await Promise.delay(2000);
     const acc = await accountModel.findOne({address: newAddress});
@@ -76,7 +76,7 @@ describe('core/rest', function () {
       (async () => {
         const channel = await ctx.amqp.instance.createChannel();
         const info = {'waves-address': newAddress, user: 1};
-        await channel.publish('profile', 'address.created', new Buffer(JSON.stringify(info)));
+        await channel.publish('profiles', 'address.created.waves-address', new Buffer(JSON.stringify(info)));
       })(),
       (async () => {
         const channel = await ctx.amqp.instance.createChannel();
@@ -100,7 +100,7 @@ describe('core/rest', function () {
     const newAddress = ctx.accounts[1];
     const channel = await ctx.amqp.instance.createChannel();
     const info = {'waves-address': newAddress, user: 1};
-    await channel.publish('profile', 'address.deleted', new Buffer(JSON.stringify(info)));
+    await channel.publish('profiles', 'address.deleted.waves-address', new Buffer(JSON.stringify(info)));
 
     await Promise.delay(2000);
 
