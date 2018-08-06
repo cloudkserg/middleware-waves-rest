@@ -42,7 +42,7 @@ const init = async () => {
 
 
   if (config.nodered.autoSyncMigrations)
-    await migrator.run(config.nodered.mongo.uri, path.join(__dirname, 'migrations'));
+    await migrator.run(config, path.join(__dirname, 'migrations'));
 
   redInitter(config);
 };
