@@ -55,6 +55,25 @@ describe('core/rest', function () {
   });
 
 
+  it('address/create from post request', async () => {
+    const newAddress = `${_.chain(new Array(35)).map(() => _.random(0, 9)).join('').value()}`;
+
+    await new Promise((res, rej) => {
+      authRequest({
+        url: `http://localhost:${config.rest.port}/addr/`,
+        method: 'POST',
+        json: {address: newAddress}
+      }, async (err, resp) => {
+        if (err || resp.statusCode !== 200)
+          return rej(err || resp);
+        const account = await accountModel.findOne({address: newAddress});
+        expect(account).not.to.be.null;
+        expect(account.isActive).to.be.true;
+        res();
+      });
+    });
+  });
+
 
   it('address/create from rabbitmq (not waves address) and check that all right', async () => {
 
