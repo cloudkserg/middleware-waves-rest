@@ -16,11 +16,12 @@ const config = require('./config'),
 
 mongoose.Promise = Promise;
 mongoose.accounts = mongoose.createConnection(config.mongo.accounts.uri);
+mongoose.profile = mongoose.createConnection(config.mongo.profile.uri);
 
 if (config.mongo.data.useData)
   mongoose.data = mongoose.createConnection(config.mongo.data.uri);
 
-_.chain([mongoose.accounts, mongoose.data])
+_.chain([mongoose.accounts, mongoose.data, mongoose.profile])
   .compact().forEach(connection =>
     connection.on('disconnected', function () {
       log.error('mongo disconnected!');
