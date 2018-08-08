@@ -73,6 +73,8 @@ The options are presented below:
 | HTTP_ADMIN | admin path for nodered or false (if not publish as default)
 | RPC   | the path to waves rest api for get balance for user 
 | LABORX | url for laborxAuth [default=http://localhost:3001/api/v1/security]
+| LABORX_RABBIT_SERVICE_NAME | service name for laborx[exchange=events] in rabbitMq 
+| LABORX_RABBIT_URI | rabbit uri for laborx [exchange=events]
 
 #### Configure env for tests
 

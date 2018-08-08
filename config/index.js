@@ -67,6 +67,8 @@ let config = {
           serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
         },
         laborx: {
+          url: process.env.LABORX_RABBIT_URI || 'amqp://localhost:5672',
+          serviceName: process.env.LABORX_RABBIT_SERVICE_NAME || '',
           authProvider: process.env.LABORX || 'http://localhost:3001/api/v1/security',
           profileModel: accountPrefix + 'Profile',
           dbAlias: 'accounts'
