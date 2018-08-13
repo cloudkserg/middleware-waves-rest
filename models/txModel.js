@@ -83,4 +83,4 @@ const TX = new mongoose.Schema({
   }]
 }, {_id: false});
 
-module.exports = mongoose.data.model(`${config.mongo.data.collectionPrefix}TX`, TX);
+module.exports = () => mongoose.data.model(`${config.mongo.data.collectionPrefix}TX`, TX);

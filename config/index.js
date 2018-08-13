@@ -19,21 +19,23 @@ const path = require('path'),
   node = {
     rpc: process.env.RPC || 'http://localhost:6869'
   },
-  accountPrefix = process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves';
+  accountPrefix = process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
+  profilePrefix = process.env.MONGO_PROFILE_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
+  collectionPrefix = process.env.MONGO_DATA_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves';
 
 let config = {
   mongo: {
     accounts: {
       uri: process.env.MONGO_ACCOUNTS_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/data',
-      collectionPrefix: process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves'
+      collectionPrefix: accountPrefix
     },
     profile: {
       uri: process.env.MONGO_PROFILE_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/data',
-      collectionPrefix: process.env.MONGO_PROFILE_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves'
+      collectionPrefix: profilePrefix
     },
     data: {
       uri: process.env.MONGO_DATA_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/data',
-      collectionPrefix: process.env.MONGO_DATA_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
+      collectionPrefix: collectionPrefix,
       useData: process.env.USE_MONGO_DATA ? parseInt(process.env.USE_MONGO_DATA) : 1
     }
   },
@@ -59,8 +61,8 @@ let config = {
         ['request-promise']: require('request-promise'),
         apiKey: process.env.API_KEY || 'password',
         mongo: {
-          accountPrefix: accountPrefix,
-          collectionPrefix: process.env.MONGO_DATA_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves'
+          accountPrefix,
+          collectionPrefix
         },
         rabbit: {
           url: process.env.RABBIT_URI || 'amqp://localhost:5672',
@@ -70,8 +72,8 @@ let config = {
           url: process.env.LABORX_RABBIT_URI || 'amqp://localhost:5672',
           serviceName: process.env.LABORX_RABBIT_SERVICE_NAME || '',
           authProvider: process.env.LABORX || 'http://localhost:3001/api/v1/security',
-          profileModel: accountPrefix + 'Profile',
-          dbAlias: 'accounts'
+          profileModel: profilePrefix + 'Profile',
+          dbAlias: 'profile'
         }
       }
     }

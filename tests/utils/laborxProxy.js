@@ -7,16 +7,17 @@ const express = require('express'),
   app = express(),
   config = require('../config');
 
+const laborx = config.dev.laborx;
 // respond with "hello world" when a GET request is made to the homepage
-app.post('/api/v1/security/signin/signature/addresses', function (req, res) {
+app.post('/api/v1/security/signin/signature/chronomint', function (req, res) {
   if (!req.headers.authorization) res.status(400).send('missing authorization header');
   
   const params = req.headers.authorization.split(' ');
-  if (params[0] === 'Bearer' && params[1] === config.dev.signature) {
+  if (params[0] === 'Bearer' && params[1] === laborx.token) {
     res.status(200).send(JSON.stringify({
       'addresses': {
-        'ethereum-public-key': config.dev['ethereum-public-key'],
-        'waves-address': config.dev.accounts[0]
+        'ethereum-public-key': laborx.key,
+        'waves-address': 'adasdasd'
       }
     }));
     return;
@@ -25,8 +26,8 @@ app.post('/api/v1/security/signin/signature/addresses', function (req, res) {
 });
 
 
-app.listen(config.dev.proxyPort, function () {
-  console.log('proxy listening on port ' + config.dev.proxyPort  + '!');
+app.listen(laborx.proxyPort, function () {
+  console.log('proxy listening on port ' + laborx.proxyPort  + '!');
 });
 
 

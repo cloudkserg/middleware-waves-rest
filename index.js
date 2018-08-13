@@ -11,15 +11,21 @@ const config = require('./config'),
   bunyan = require('bunyan'),
   migrator = require('middleware_service.sdk').migrator,
   _ = require('lodash'),
+  models = require('./models'),
   log = bunyan.createLogger({name: 'core.rest'}),
   redInitter = require('middleware_service.sdk').init;
 
-mongoose.Promise = Promise;
-mongoose.accounts = mongoose.createConnection(config.mongo.accounts.uri);
-mongoose.profile = mongoose.createConnection(config.mongo.profile.uri);
+/**
+ * @module entry point
+ * @description expose an express web server for txs
+ * and addresses manipulation
+ */
 
-if (config.mongo.data.useData)
-  mongoose.data = mongoose.createConnection(config.mongo.data.uri);
+
+mongoose.Promise = Promise;
+mongoose.accounts = mongoose.createConnection(config.mongo.accounts.uri, {useMongoClient: true});
+mongoose.profile = mongoose.createConnection(config.mongo.profile.uri, {useMongoClient: true});
+mongoose.data = mongoose.createConnection(config.mongo.data.uri, {useMongoClient: true});
 
 _.chain([mongoose.accounts, mongoose.data, mongoose.profile])
   .compact().forEach(connection =>
@@ -29,22 +35,21 @@ _.chain([mongoose.accounts, mongoose.data, mongoose.profile])
     })
   ).value();
 
-config.nodered.functionGlobalContext.connections.primary = mongoose;
+models.init();
+
 
 
 
 const init = async () => {
 
-  require('require-all')({
-    dirname: path.join(__dirname, '/models'),
-    filter: /(.+Model)\.js$/
-  });
-
-
   if (config.nodered.autoSyncMigrations)
-    await migrator.run(config, path.join(__dirname, 'migrations'));
+    await migrator.run(
+      config,
+      path.join(__dirname, 'migrations')
+    );
 
   redInitter(config);
+
 };
 
 module.exports = init();

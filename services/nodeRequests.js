@@ -18,10 +18,6 @@ const setRpcConfig = (newConfig) => {
   configRpc = newConfig;
 };
 
-const privatePost = (query, body, apiKey) => makeRequest(query, 'POST', body, {
-  'X-API-Key': apiKey
-});
-
 const makeRequest = function (path, method, body, headers = {})  {
   const options = {
     method,
