@@ -46,17 +46,17 @@ module.exports = (ctx) => {
     ctx.restPid.kill();
   });
 
-  it('GET /tx/:hash  - less than 1s', async () => {
-    const hash = 'TESTHASH2';
+  it('GET /tx/:id  - less than 1s', async () => {
+    const id = 'TESTHASH2';
     const address = generateAddress('addr');
-    await models.txModel.findOneAndUpdate({'_id': hash}, {
+    await models.txModel.findOneAndUpdate({'_id': id}, {
       recipient: address,
       timestamp: 1,
       blockNumber: 5
     }, {upsert: true, new: true});
 
     const start = Date.now();
-    await request(`${url}/tx/${hash}`, {
+    await request(`${url}/tx/${id}`, {
       method: 'GET',
       json: true,
       headers: getAuthHeaders()

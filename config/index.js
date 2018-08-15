@@ -19,6 +19,10 @@ const path = require('path'),
   node = {
     rpc: process.env.RPC || 'http://localhost:6869'
   },
+  rabbit = {
+    url: process.env.RABBIT_URI || 'amqp://localhost:5672',
+    serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
+  },
   accountPrefix = process.env.MONGO_ACCOUNTS_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
   profilePrefix = process.env.MONGO_PROFILE_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves',
   collectionPrefix = process.env.MONGO_DATA_COLLECTION_PREFIX || process.env.MONGO_COLLECTION_PREFIX || 'waves';
@@ -41,6 +45,7 @@ let config = {
   },
   node,
   rest,
+  rabbit,
   nodered: {
     mongo: {
       uri: process.env.NODERED_MONGO_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/data',
@@ -64,10 +69,7 @@ let config = {
           accountPrefix,
           collectionPrefix
         },
-        rabbit: {
-          url: process.env.RABBIT_URI || 'amqp://localhost:5672',
-          serviceName: process.env.RABBIT_SERVICE_NAME || 'app_waves'
-        },
+        rabbit,
         laborx: {
           url: process.env.LABORX_RABBIT_URI || 'amqp://localhost:5672',
           serviceName: process.env.LABORX_RABBIT_SERVICE_NAME || '',

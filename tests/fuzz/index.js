@@ -27,31 +27,34 @@ module.exports = (ctx) => {
     ctx.amqp.channel.prefetch(1);
     
     ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(10000);
+    await Promise.delay(5000);
   });
 
   after ('kill environment', async () => {
+
     await ctx.amqp.channel.close();
     await killProcess(ctx.restPid);
   });
 
-  describe('auth', () => authTests(ctx));
-  describe('address', () => addressTests(ctx));
+   describe('auth', () => authTests(ctx));
+   describe('address', () => addressTests(ctx));
 
   it('kill rest server and up already - work GET /tx/:hash', async () => {
+
     await killProcess(ctx.restPid);
     ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(10000);
+    await Promise.delay(5000);
 
-    const hash = 'TESTHASH2';
+    const id = 'TESTHASH2';
     const address = generateAddress('addr');
-    const tx = await models.txModel.findOneAndUpdate({'_id': hash}, {
+    const tx = await models.txModel.findOneAndUpdate({'_id': id}, {
       recipient: address,
       timestamp: 1,
+      signature: 'babba',
       blockNumber: 5
     }, {upsert: true, new: true});
   
-    const response = await request(`${url}/tx/${hash}`, {
+    const response = await request(`${url}/tx/${id}`, {
       method: 'GET',
       json: true,
       headers: getAuthHeaders()
@@ -59,10 +62,13 @@ module.exports = (ctx) => {
 
     expect(response).to.deep.equal({
       'recipient':address,
-      'assets':[],
+      'data':[],
+      'transfers':[],
+      'hash': 'babba',
+      'signature': 'babba',
       'blockNumber': tx.blockNumber,
-      'hash': hash,
-      'timeStamp': tx.timestamp
+      'id': id,
+      'timestamp': tx.timestamp
     });
   });
 

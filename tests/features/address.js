@@ -282,7 +282,7 @@ module.exports = (ctx) => {
       json: true
     });
     expect(response).to.deep.equal({
-      balance: 0,
+      balance: "0",
       assets: {}
     });
 
@@ -313,7 +313,7 @@ module.exports = (ctx) => {
       json: true
     });
     expect(response).to.deep.equal({
-      balance: 200,
+      balance: "200",
       assets: {
         abba: {
           balance: 30*100,

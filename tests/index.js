@@ -24,7 +24,7 @@ mongoose.data = mongoose.createConnection(config.mongo.data.uri, {useMongoClient
 mongoose.accounts = mongoose.createConnection(config.mongo.accounts.uri, {useMongoClient: true});
 mongoose.profile = mongoose.createConnection(config.mongo.profile.uri, {useMongoClient: true});
 
-describe('core/nemRest', function () {
+describe('core/wavesRest', function () {
 
   before (async () => {
     models.init();

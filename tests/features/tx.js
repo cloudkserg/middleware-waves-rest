@@ -66,7 +66,7 @@ module.exports = (ctx) => {
       blockNumber: 5
     }, {upsert: true});
 
-    const response = await request(`${url}/tx/${hash}`, {
+    const response = await request(`${url}/tx/${id}`, {
       method: 'GET',
       json: true,
       headers: getAuthHeaders()
@@ -74,10 +74,11 @@ module.exports = (ctx) => {
 
     expect(response).to.deep.equal({
       'recipient':address,
-      'assets':[],
+      "transfers": [],
+      "data": [],
       'blockNumber': tx.blockNumber,
       'id': id,
-      'timeStamp': tx.timestamp
+      'timestamp': tx.timestamp
     });
   });
 
@@ -134,7 +135,6 @@ module.exports = (ctx) => {
     }, {upsert: true});
 
 
-
     const response = await request(`${url}/tx/${address}/history`, {
       method: 'GET',
       json: true,
@@ -143,19 +143,23 @@ module.exports = (ctx) => {
     expect(response.length).to.equal(2);
     expect(response).to.deep.equal([
       {
-        recipient: 'ADDRZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ',
-        assets: [],
+        recipient: address,
         blockNumber: 7,
         id: 'TEST2',
-        signature: 3,
-        timeStamp: 2 
+        hash: "3",
+        signature: "3",
+        data: [],
+        transfers: [],
+        timestamp: 2 
       }, { 
-        recipient: 'ADDRZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ',
-        assets: [],
+        recipient: address,
         blockNumber: 5,
         id: 'TEST1',
-        signature: 1,
-        timeStamp: 1 
+        hash: "1",
+        signature: "1",
+        data: [],
+        transfers: [],
+        timestamp: 1 
       }
     ])
   });
