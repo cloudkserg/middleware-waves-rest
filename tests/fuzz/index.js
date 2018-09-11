@@ -10,30 +10,17 @@ const config = require('../config'),
   models = require('../../models'),
   killProcess = require('../helpers/killProcess'),
   expect = require('chai').expect,
-  url = config.dev.url,
-
+  generateAddress = require('../utils/address/generateAddress'),
   authTests = require('./auth'),
   addressTests = require('./address');
 
 
 
-const generateAddress  = (name) => name.concat('z'.repeat(35-name.length)).toUpperCase()
-const getAuthHeaders = () => { return {'Authorization': 'Bearer ' + config.dev.laborx.token}; }
-
 module.exports = (ctx) => {
 
   before (async () => {
-    ctx.amqp.channel = await ctx.amqp.instance.createChannel();
-    ctx.amqp.channel.prefetch(1);
-    
     ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(5000);
-  });
-
-  after ('kill environment', async () => {
-
-    await ctx.amqp.channel.close();
-    await killProcess(ctx.restPid);
+    await Promise.delay(10000);
   });
 
    describe('auth', () => authTests(ctx));
@@ -46,18 +33,21 @@ module.exports = (ctx) => {
     await Promise.delay(5000);
 
     const id = 'TESTHASH2';
-    const address = generateAddress('addr');
-    const tx = await models.txModel.findOneAndUpdate({'_id': id}, {
+    const address = generateAddress();
+    await models.txModel.update({'_id': id}, {
       recipient: address,
       timestamp: 1,
       signature: 'babba',
       blockNumber: 5
-    }, {upsert: true, new: true});
+    }, {upsert: true});
   
-    const response = await request(`${url}/tx/${id}`, {
+    const response = await request(`http://localhost:${config.rest.port}/tx/${id}`, {
       method: 'GET',
       json: true,
-      headers: getAuthHeaders()
+      json: true,
+      headers: {
+        Authorization: `Bearer ${config.dev.laborx.token}`
+      }
     }).catch(e => e);
 
     expect(response).to.deep.equal({
@@ -66,11 +56,15 @@ module.exports = (ctx) => {
       'transfers':[],
       'hash': 'babba',
       'signature': 'babba',
-      'blockNumber': tx.blockNumber,
+      'blockNumber': 5,
       'id': id,
-      'timestamp': tx.timestamp
+      'timestamp': 1
     });
   });
 
+
+  after ('kill environment', async () => {
+    await ctx.restPid.kill();
+  });
 
 };

@@ -8,9 +8,7 @@ const models = require('../../models'),
   config = require('../config'),
   request = require('request-promise'),
   expect = require('chai').expect,
-  url = config.dev.url;
-
-const generateAddress  = (name) => name.concat('z'.repeat(35-name.length))
+  generateAddress = require('../utils/address/generateAddress');
 
 module.exports = () => {
 
@@ -22,9 +20,9 @@ module.exports = () => {
 
 
   it('GET /addr/:addr/balance without auth headers - error', async () => {
-    const address = generateAddress('test-address7');
+    const address = generateAddress();
 
-    const response = await request(`${url}/addr/${address}/balance`, {
+    const response = await request(`http://localhost:${config.rest.port}/addr/${address}/balance`, {
       method: 'GET',
       json: true
     }).catch(e => e);
@@ -33,9 +31,9 @@ module.exports = () => {
   });
 
   it('GET /addr/:addr/balance with not right auth headers - error', async () => {
-    const address = generateAddress('test-address7');
+    const address = generateAddress();
 
-    const response = await request(`${url}/addr/${address}/balance`, {
+    const response = await request(`http://localhost:${config.rest.port}/addr/${address}/balance`, {
       method: 'GET',
       headers: {'Authorization': 'Bearer gippo'},
       json: true
@@ -47,12 +45,12 @@ module.exports = () => {
 
 
   it('GET /tx/:hash without auth headers - error', async () => {
-    const hash = generateAddress('test');
+    const hash = generateAddress();
     const tx = new models.txModel();
     tx._id = hash;
     await tx.save();
 
-    const response = await request(`${url}/tx/${hash}`, {
+    const response = await request(`http://localhost:${config.rest.port}/tx/${hash}`, {
       method: 'GET',
       json: true
     }).catch(e => e);
@@ -61,9 +59,9 @@ module.exports = () => {
   });
 
   it('GET /tx/:hash with not right auth headers - error', async () => {
-    const hash = generateAddress('test');
+    const hash = generateAddress();
 
-    const response = await request(`${url}/tx/${hash}`, {
+    const response = await request(`http://localhost:${config.rest.port}/tx/${hash}`, {
       method: 'GET',
       headers: {'Authorization': 'Bearer gippo'},
       json: true
@@ -74,15 +72,15 @@ module.exports = () => {
 
 
   it('GET /tx/:addr/history without auth headers - error', async () => {
-    const address = generateAddress('addr');
-    await models.accountModel.findOneAndUpdate({address}, {address}, {upsert: true});
+    const address = generateAddress();
+    await models.accountModel.update({address}, {address}, {upsert: true});
 
     const tx = new models.txModel();
     tx._id = 11;
     tx.recipient = address;
     await tx.save();
 
-    const response = await request(`${url}/tx/${address}/history`, {
+    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
       method: 'GET',
       json: true
     }).catch(e => e);
@@ -91,9 +89,9 @@ module.exports = () => {
   });
 
   it('GET /tx/:addr/history with not right auth headers - error', async () => {
-    const address = generateAddress('addr');
+    const address = generateAddress();
 
-    const response = await request(`${url}/tx/${address}/history`, {
+    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
       method: 'GET',
       headers: {'Authorization': 'Bearer gippo'},
       json: true

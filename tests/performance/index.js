@@ -10,11 +10,9 @@ const models = require('../../models'),
   expect = require('chai').expect,
   Promise = require('bluebird'),
   spawn = require('child_process').spawn,
-  url = config.dev.url;
+  generateAddress = require('../utils/address/generateAddress');
 
 
-const generateAddress  = (name) => name.concat('z'.repeat(35-name.length)).toUpperCase()
-const getAuthHeaders = () => { return {'Authorization': 'Bearer ' + config.dev.laborx.token}; }
 const TIMEOUT = 1000;
 
 module.exports = (ctx) => {
@@ -22,9 +20,6 @@ module.exports = (ctx) => {
   before (async () => {
     await models.profileModel.remove({});
     await models.accountModel.remove({});
-
-    ctx.amqp.channel = await ctx.amqp.instance.createChannel();
-    ctx.amqp.channel.prefetch(1);
 
     ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
     await Promise.delay(10000);
@@ -34,32 +29,22 @@ module.exports = (ctx) => {
     await models.txModel.remove({});
   });
 
-  afterEach(async () => {
-    if (ctx.amqp.queue) {
-      await ctx.amqp.channel.deleteQueue(ctx.amqp.queue.queue);
-      await Promise.delay(1000);
-    }
-  });
-
-  after ('kill environment', async () => {
-    await ctx.amqp.channel.close();
-    ctx.restPid.kill();
-  });
-
   it('GET /tx/:id  - less than 1s', async () => {
     const id = 'TESTHASH2';
-    const address = generateAddress('addr');
-    await models.txModel.findOneAndUpdate({'_id': id}, {
+    const address = generateAddress();
+    await models.txModel.update({'_id': id}, {
       recipient: address,
       timestamp: 1,
       blockNumber: 5
-    }, {upsert: true, new: true});
+    }, {upsert: true});
 
     const start = Date.now();
-    await request(`${url}/tx/${id}`, {
+    await request(`http://localhost:${config.rest.port}/tx/${id}`, {
       method: 'GET',
       json: true,
-      headers: getAuthHeaders()
+      headers: {
+        Authorization: `Bearer ${config.dev.laborx.token}`
+      }
     });
 
     expect(Date.now() - start).to.be.below(TIMEOUT);
@@ -67,31 +52,33 @@ module.exports = (ctx) => {
 
 
   it('GET /tx/:addr/history  - less than 1s', async () => {
-    const address = generateAddress('addr');
-    await models.txModel.findOneAndUpdate({'_id': 'TEST1'}, {
+    const address = generateAddress();
+    await models.txModel.update({'_id': 'TEST1'}, {
       recipient: address,
       timestamp: 1,
       blockNumber: 5
     }, {upsert: true});
-    await models.txModel.findOneAndUpdate({'_id': 'TEST2'}, {
+    await models.txModel.update({'_id': 'TEST2'}, {
       recipient: address,
       timestamp: 2,
       blockNumber: 7
     }, {upsert: true});
 
     const start  = Date.now();
-    await request(`${url}/tx/${address}/history`, {
+    await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
       method: 'GET',
       json: true,
-      headers: getAuthHeaders()
+      headers: {
+        Authorization: `Bearer ${config.dev.laborx.token}`
+      }
     });
 
     expect(Date.now() - start).to.be.below(TIMEOUT);
   });
 
   it('GET /addr/:addr/balance -  less than 1s', async () => {
-    const address = generateAddress('test7');
-    await models.accountModel.findOneAndUpdate({address}, {
+    const address = generateAddress();
+    await models.accountModel.update({address}, {
       balance: {
         confirmed: 300*1000000,
         unconfirmed: 500*1000000,
@@ -112,16 +99,18 @@ module.exports = (ctx) => {
     });
 
     const start = Date.now();
-    await request(`${url}/addr/${address}/balance`, {
+    await request(`http://localhost:${config.rest.port}/addr/${address}/balance`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+      headers: {
+        Authorization: `Bearer ${config.dev.laborx.token}`
+      },
       json: true
     });
     expect(Date.now() - start).to.be.below(TIMEOUT);
   });
 
   it('POST /addr - less than 1s', async () => {
-    const address = generateAddress('test');
+    const address = generateAddress();
     ctx.amqp.queue = await ctx.amqp.channel.assertQueue('test_addr', {autoDelete: true, durable: false, noAck: true});
     await ctx.amqp.channel.bindQueue('test_addr', 'events', `${config.rabbit.serviceName}.account.create`);
 
@@ -130,17 +119,22 @@ module.exports = (ctx) => {
 
     await Promise.all([
       (async () => {
-        await request(url + '/addr', {
+        await request(`http://localhost:${config.rest.port}/addr`, {
           method: 'POST',
           json: {address}
         });
       })(),
 
+
       (async () => {
-        await new Promise(res => ctx.amqp.channel.consume('test_addr', msg => {
+        await new Promise(res => ctx.amqp.channel.consume('test_addr', async msg => {
+
+          if(!msg)
+            return;
+
           const content = JSON.parse(msg.content);
           expect(content.address).to.equal(address);
-          ctx.amqp.channel.cancel(msg.fields.consumerTag);
+          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
       })()
@@ -150,9 +144,9 @@ module.exports = (ctx) => {
   });
 
   it('send message address.created from laborx - get events message account.created less than 1s', async () => {
-    const address = generateAddress('test4');
-    ctx.amqp.queue = await ctx.amqp.channel.assertQueue('test_addr4', {autoDelete: true, durable: false, noAck: true});
-    await ctx.amqp.channel.bindQueue('test_addr4', 'events', `${config.rabbit.serviceName}.account.created`);
+    const address = generateAddress();
+    ctx.amqp.queue = await ctx.amqp.channel.assertQueue('test_addr', {autoDelete: true, durable: false, noAck: true});
+    await ctx.amqp.channel.bindQueue('test_addr', 'events', `${config.rabbit.serviceName}.account.created`);
 
     const start = Date.now();
     await Promise.all([
@@ -161,11 +155,16 @@ module.exports = (ctx) => {
         await ctx.amqp.channel.publish('profiles', 'address.created', new Buffer(JSON.stringify(data)));
       })(),
 
+
       (async () => {
-        await new Promise(res => ctx.amqp.channel.consume('test_addr4',  msg => {
+        await new Promise(res => ctx.amqp.channel.consume('test_addr',  async msg => {
+
+          if(!msg)
+            return;
+
           const content = JSON.parse(msg.content);
           expect(content.address).to.equal(address);
-          ctx.amqp.channel.cancel(msg.fields.consumerTag);
+          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
       })()
@@ -175,7 +174,7 @@ module.exports = (ctx) => {
   });
 
   it('send message address.deleted from laborx - get events message account.deleted less than 1s', async () => {
-    const address = generateAddress('test4');
+    const address = generateAddress();
     ctx.amqp.queue = await ctx.amqp.channel.assertQueue('test_addr', {autoDelete: true, durable: false, noAck: true});
     await ctx.amqp.channel.bindQueue('test_addr', 'events', `${config.rabbit.serviceName}.account.deleted`);
     
@@ -186,11 +185,16 @@ module.exports = (ctx) => {
         await ctx.amqp.channel.publish('profiles', 'address.deleted', new Buffer(JSON.stringify(data)));
       })(),
 
+
       (async () => {
-        await new Promise(res => ctx.amqp.channel.consume('test_addr',  msg => {
+        await new Promise(res => ctx.amqp.channel.consume('test_addr',  async msg => {
+
+          if(!msg)
+            return;
+
           const content = JSON.parse(msg.content);
           expect(content.address).to.equal(address);
-          ctx.amqp.channel.cancel(msg.fields.consumerTag);
+          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
       })()
@@ -200,7 +204,9 @@ module.exports = (ctx) => {
   });
 
 
-
+  after ('kill environment', async () => {
+    ctx.restPid.kill();
+  });
  
 
 
