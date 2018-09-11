@@ -12,7 +12,7 @@ const config = require('./config'),
   migrator = require('middleware_service.sdk').migrator,
   _ = require('lodash'),
   models = require('./models'),
-  log = bunyan.createLogger({name: 'core.rest'}),
+  log = bunyan.createLogger({name: 'core.rest', level: config.nodered.logging.console.level}),
   redInitter = require('middleware_service.sdk').init;
 
 /**
