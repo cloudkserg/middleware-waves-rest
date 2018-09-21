@@ -2,6 +2,9 @@
   "name": "middleware_waves.rest",
   "version": "1.0.0",
   "main": "index.js",
+  "requirements": {
+
+  },
   "dependencies": {
     "amqplib": "^0.5.1",
     "bcryptjs": "^2.4.3",
@@ -12,6 +15,7 @@
     "jsesc": "^2.5.1",
     "lodash": "^4.17.4",
     "middleware_service.sdk": "github:chronobank/middleware-service-sdk",
+    "middleware_common_infrastructure": "^1.0.0",
     "mongoose": "^4.11.11",
     "mongoose-long": "^0.1.1",
     "request": "^2.83.0",

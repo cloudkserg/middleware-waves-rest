@@ -88,6 +88,10 @@ The options are presented below:
 | PRIVATE_KEY_TWO | private key for second account
 | PUBLIC_KEY_TWO | public key for second account
 | SEED_PHARSE_ONE | seed pharse for first account
+| SYSTEM_RABBIT_URI   | rabbitmq URI connection string for infrastructure
+| SYSTEM_RABBIT_SERVICE_NAME   | rabbitmq service name for infrastructure
+| SYSTEM_RABBIT_EXCHANGE   | rabbitmq exchange name for infrastructure
+| CHECK_SYSTEM | check infrastructure or not (default = true)
 
 
 

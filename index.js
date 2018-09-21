@@ -11,6 +11,9 @@ const config = require('./config'),
   bunyan = require('bunyan'),
   migrator = require('middleware_service.sdk').migrator,
   _ = require('lodash'),
+  AmqpService = require('middleware_common_infrastructure/AmqpService'),
+  InfrastructureInfo = require('middleware_common_infrastructure/InfrastructureInfo'),
+  InfrastructureService = require('middleware_common_infrastructure/InfrastructureService'),
   models = require('./models'),
   log = bunyan.createLogger({name: 'core.rest', level: config.nodered.logging.console.level}),
   redInitter = require('middleware_service.sdk').init;
@@ -38,9 +41,29 @@ _.chain([mongoose.accounts, mongoose.data, mongoose.profile])
 models.init();
 
 
+const runSystem = async function () {
+  const rabbit = new AmqpService(
+    config.systemRabbit.url, 
+    config.systemRabbit.exchange,
+    config.systemRabbit.serviceName
+  );
+  const info = new InfrastructureInfo(require('./package.json'));
+  const system = new InfrastructureService(info, rabbit, {checkInterval: 10000});
+  await system.start();
+  system.on(system.REQUIREMENT_ERROR, ({requirement, version}) => {
+    log.error(`Not found requirement with name ${requirement.name} version=${requirement.version}.` +
+        ` Last version of this middleware=${version}`);
+    process.exit(1);
+  });
+  await system.checkRequirements();
+  system.periodicallyCheck();
+};
+
 
 
 const init = async () => {
+  if (config.checkSystem)
+    await runSystem();
 
   if (config.nodered.autoSyncMigrations)
     await migrator.run(
