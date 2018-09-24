@@ -4,6 +4,6 @@
  * @author Kirill Sergeev <cloudkserg11@gmail.com>
  */
 module.exports = function () {
-  let name = Math.random().toString(36).substring(20);
+  let name = (Math.random()*100000000000000000).toString(36).substring(0, 20)
   return name.concat('z'.repeat(35-name.length)).toUpperCase();
 };
