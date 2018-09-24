@@ -22,7 +22,7 @@ module.exports = () => {
   it('GET /addr/:addr/balance without auth headers - error', async () => {
     const address = generateAddress();
 
-    const response = await request(`http://localhost:${config.rest.port}/addr/${address}/balance`, {
+    const response = await request(`${config.dev.url}/addr/${address}/balance`, {
       method: 'GET',
       json: true
     }).catch(e => e);
@@ -33,7 +33,7 @@ module.exports = () => {
   it('GET /addr/:addr/balance with not right auth headers - error', async () => {
     const address = generateAddress();
 
-    const response = await request(`http://localhost:${config.rest.port}/addr/${address}/balance`, {
+    const response = await request(`${config.dev.url}/addr/${address}/balance`, {
       method: 'GET',
       headers: {'Authorization': 'Bearer gippo'},
       json: true
@@ -50,7 +50,7 @@ module.exports = () => {
     tx._id = hash;
     await tx.save();
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/${hash}`, {
+    const response = await request(`${config.dev.url}/tx/${hash}`, {
       method: 'GET',
       json: true
     }).catch(e => e);
@@ -61,7 +61,7 @@ module.exports = () => {
   it('GET /tx/:hash with not right auth headers - error', async () => {
     const hash = generateAddress();
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/${hash}`, {
+    const response = await request(`${config.dev.url}/tx/${hash}`, {
       method: 'GET',
       headers: {'Authorization': 'Bearer gippo'},
       json: true
@@ -80,7 +80,7 @@ module.exports = () => {
     tx.recipient = address;
     await tx.save();
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
+    const response = await request(`${config.dev.url}/tx/${address}/history`, {
       method: 'GET',
       json: true
     }).catch(e => e);
@@ -91,7 +91,7 @@ module.exports = () => {
   it('GET /tx/:addr/history with not right auth headers - error', async () => {
     const address = generateAddress();
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
+    const response = await request(`${config.dev.url}/tx/${address}/history`, {
       method: 'GET',
       headers: {'Authorization': 'Bearer gippo'},
       json: true

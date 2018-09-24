@@ -23,14 +23,11 @@ module.exports = (ctx) => {
     await Promise.delay(10000);
   });
 
-   describe('auth', () => authTests(ctx));
-   describe('address', () => addressTests(ctx));
 
   it('kill rest server and up already - work GET /tx/:hash', async () => {
-
-    await killProcess(ctx.restPid);
+    await ctx.restPid.kill();
     ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
-    await Promise.delay(5000);
+    await Promise.delay(10000);
 
     const id = 'TESTHASH2';
     const address = generateAddress();
@@ -41,7 +38,7 @@ module.exports = (ctx) => {
       blockNumber: 5
     }, {upsert: true});
   
-    const response = await request(`http://localhost:${config.rest.port}/tx/${id}`, {
+    const response = await request(`${config.dev.url}/tx/${id}`, {
       method: 'GET',
       json: true,
       json: true,
@@ -61,6 +58,9 @@ module.exports = (ctx) => {
       'timestamp': 1
     });
   });
+   
+   describe('auth', () => authTests(ctx));
+   describe('address', () => addressTests(ctx));
 
 
   after ('kill environment', async () => {

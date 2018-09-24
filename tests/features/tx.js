@@ -23,7 +23,7 @@ module.exports = (ctx) => {
   });
 
   it('GET /tx/:id when no tx in db - get {}', async () => {
-    const response = await request(`http://localhost:${config.rest.port}/tx/TXHASH`, {
+    const response = await request(`${config.dev.url}/tx/TXHASH`, {
       method: 'GET',
       json: true,
       headers: {
@@ -42,7 +42,7 @@ module.exports = (ctx) => {
       blockNumber: 5
     }, {upsert: true});
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/BART`, {
+    const response = await request(`${config.dev.url}/tx/BART`, {
       method: 'GET',
       json: true,
       headers: {
@@ -67,7 +67,7 @@ module.exports = (ctx) => {
       blockNumber: 5
     }, {upsert: true});
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/${id}`, {
+    const response = await request(`${config.dev.url}/tx/${id}`, {
       method: 'GET',
       json: true,
       headers: {
@@ -89,7 +89,7 @@ module.exports = (ctx) => {
 
   it('GET /tx/:addr/history when no tx in db - get []', async () => {
     const address = generateAddress();
-    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
+    const response = await request(`${config.dev.url}/tx/${address}/history`, {
       method: 'GET',
       json: true,
       headers: {
@@ -101,13 +101,7 @@ module.exports = (ctx) => {
 
   it('GET /tx/:addr/history with non exist address - get []', async () => {
     const address = generateAddress();
-    await models.txModel.update({'_id': 'HASHES'}, {
-      recipient: generateAddress(),
-      timestamp: 1,
-      blockNumber: 5
-    }, {upsert: true});
-
-    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
+    const response = await request(`${config.dev.url}/tx/${address}/history`, {
       method: 'GET',
       json: true,
       headers: {
@@ -141,7 +135,7 @@ module.exports = (ctx) => {
     }, {upsert: true});
 
 
-    const response = await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
+    const response = await request(`${config.dev.url}/tx/${address}/history`, {
       method: 'GET',
       json: true,
       headers: {

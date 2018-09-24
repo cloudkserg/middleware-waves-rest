@@ -12,7 +12,8 @@
 const mongoose = require('mongoose'),
   _ = require('lodash'),
   jsesc = require('jsesc'),
-  config = require('../config');
+  config = require('../config'),
+  messages = require('middleware-common-components/factories/messages/addressMessageFactory');
 
 require('mongoose-long')(mongoose);
 
@@ -46,7 +47,7 @@ const Account = new mongoose.Schema({
     type: String,
     unique: true,
     required: true,
-    validate: [a=>  /^[0-9a-zA-Z]{35}$/.test(a)]
+    validate: [a=>  /^[0-9a-zA-Z]{35}$/.test(a), messages.wrongAddress]
   },
   assets: {type: mongoose.Schema.Types.Mixed, default: {}, set: setAssets, get: getAssets},
   balance: {type: mongoose.Schema.Types.Long, default: 0},

@@ -21,7 +21,7 @@ module.exports = (ctx) => {
     await models.profileModel.remove({});
     await models.accountModel.remove({});
 
-    ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'ignore'});
+    ctx.restPid = spawn('node', ['index.js'], {env: process.env, stdio: 'inherit'});
     await Promise.delay(10000);
   });
 
@@ -39,7 +39,7 @@ module.exports = (ctx) => {
     }, {upsert: true});
 
     const start = Date.now();
-    await request(`http://localhost:${config.rest.port}/tx/${id}`, {
+    await request(`${config.dev.url}/tx/${id}`, {
       method: 'GET',
       json: true,
       headers: {
@@ -65,7 +65,7 @@ module.exports = (ctx) => {
     }, {upsert: true});
 
     const start  = Date.now();
-    await request(`http://localhost:${config.rest.port}/tx/${address}/history`, {
+    await request(`${config.dev.url}/tx/${address}/history`, {
       method: 'GET',
       json: true,
       headers: {
@@ -99,7 +99,7 @@ module.exports = (ctx) => {
     });
 
     const start = Date.now();
-    await request(`http://localhost:${config.rest.port}/addr/${address}/balance`, {
+    await request(`${config.dev.url}/addr/${address}/balance`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${config.dev.laborx.token}`
@@ -119,7 +119,7 @@ module.exports = (ctx) => {
 
     await Promise.all([
       (async () => {
-        await request(`http://localhost:${config.rest.port}/addr`, {
+        await request(`${config.dev.url}/addr`, {
           method: 'POST',
           json: {address}
         });
