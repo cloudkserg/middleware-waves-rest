@@ -249,6 +249,7 @@ module.exports = (ctx) => {
 
   it('send message address.deleted from laborx - get events message account.deleted after account deleted in mongo', async () => {
     const address = generateAddress();
+    await models.accountModel.create({address});
     ctx.amqp.queue = await ctx.amqp.channel.assertQueue('test_addr', {autoDelete: true, durable: false, noAck: true});
     await ctx.amqp.channel.bindQueue('test_addr', 'events', `${config.rabbit.serviceName}.account.deleted`);
     
@@ -315,7 +316,7 @@ module.exports = (ctx) => {
   it('GET /addr/:addr/balance - and get response with balance', async () => {
     const address = generateAddress();
 
-    const response = await request(`${config.dev.url}/addr/addr/${address}/balance`, {
+    const response = await request(`${config.dev.url}/addr/${address}/balance`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${config.dev.laborx.token}`,
@@ -323,7 +324,7 @@ module.exports = (ctx) => {
       json: true
     });
     expect(response).to.deep.equal({
-      balance: "0",
+      balance: 0,
       assets: {}
     });
 
@@ -332,7 +333,8 @@ module.exports = (ctx) => {
   it('GET /addr/:addr/balance - and get response with balance and assets', async () => {
     const address = generateAddress();
 
-    await models.accountModel.update({address}, {
+    await models.accountModel.create({
+      address,
       balance: 200,
       assets: {
         abba: {
