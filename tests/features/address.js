@@ -50,11 +50,11 @@ module.exports = (ctx) => {
           const content = JSON.parse(msg.content);
           expect(content.address).to.equal(address);
 
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
       })()
     ]);
+    await ctx.amqp.channel.deleteQueue('test_addr');
 
   });
 
@@ -87,11 +87,13 @@ module.exports = (ctx) => {
               return;
 
             const content = JSON.parse(msg.content);
+            if (content.address !== address)
+                return;
             expect(content.address).to.equal(address);
-            await ctx.amqp.channel.deleteQueue('test_addr');
             res();
           })
         );
+        await ctx.amqp.channel.deleteQueue('test_addr');
 
         const isExist = await models.accountModel.count({address});
         expect(!!isExist).to.equal(true);
@@ -119,10 +121,12 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address !== address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
+        await ctx.amqp.channel.deleteQueue('test_addr');
         const isExist = await models.accountModel.count({address});
         expect(!!isExist).to.equal(true);
       })()
@@ -134,8 +138,8 @@ module.exports = (ctx) => {
     ctx.amqp.queue = await ctx.amqp.channel.assertQueue('test_addr', {autoDelete: true, durable: false, noAck: true});
     await ctx.amqp.channel.bindQueue('test_addr', 'internal', `${config.rabbit.serviceName}_user.created`);
     
-    await ctx.amqp.channel.assertQueue('test_addr', {autoDelete: true, durable: false, noAck: true});
-    await ctx.amqp.channel.bindQueue('test_addr', 'events', `${config.rabbit.serviceName}.account.created`);
+    await ctx.amqp.channel.assertQueue('test_addr2', {autoDelete: true, durable: false, noAck: true});
+    await ctx.amqp.channel.bindQueue('test_addr2', 'events', `${config.rabbit.serviceName}.account.created`);
     
     await Promise.all([
       (async () => {
@@ -150,10 +154,12 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address !== address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
+        await ctx.amqp.channel.deleteQueue('test_addr');
         const isExist = await models.accountModel.count({address});
         expect(!!isExist).to.equal(true);
       })(),
@@ -165,11 +171,12 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address !== address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr2');
           res();
         }));
-
+        await ctx.amqp.channel.deleteQueue('test_addr2');
         const isExist = await models.accountModel.count({address});
         expect(!!isExist).to.equal(true);
       })()
@@ -196,10 +203,12 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address !== address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
+        await ctx.amqp.channel.deleteQueue('test_addr');
 
         const isExist = await models.accountModel.count({address});
         expect(!!isExist).to.equal(true);
@@ -225,10 +234,12 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address != address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
+        await ctx.amqp.channel.deleteQueue('test_addr');
 
         const isExist = await models.accountModel.count({address});
         expect(!!isExist).to.equal(true);
@@ -254,10 +265,12 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address !== address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
+        await ctx.amqp.channel.deleteQueue('test_addr');
 
         const isExists = await models.accountModel.count({address});
         expect(!!isExists).to.equal(true);
@@ -286,12 +299,14 @@ module.exports = (ctx) => {
             return;
 
           const content = JSON.parse(msg.content);
+          if (content.address !== address)
+            return;
           expect(content.address).to.equal(address);
-          await ctx.amqp.channel.deleteQueue('test_addr');
           res();
         }));
+        await ctx.amqp.channel.deleteQueue('test_addr');
         const account = await models.accountModel.findOne({address});
-        expect(account.isActive).to.equal(false);
+        expect(account).to.be.null;
       })()
     ]);
   });
